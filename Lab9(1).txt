@@ -1,224 +1,68 @@
 #task 1:
-# implement greedy best first search in python
-import heapq
+# Implement Minimax Algo in python.(pseudocode is given in 
+# chapter slides as well as in this manual below)
 
-# Define the Romania map graph with straight-line distances (heuristics) to Bucharest
-romania_map = {
-    'Arad': [('Zerind', 75), ('Sibiu', 140), ('Timisoara', 118)],
-    'Zerind': [('Oradea', 71), ('Arad', 75)],
-    'Oradea': [('Sibiu', 151), ('Zerind', 71)],
-    'Sibiu': [('Fagaras', 99), ('Rimnicu Vilcea', 80), ('Arad', 140), ('Oradea', 151)],
-    'Timisoara': [('Lugoj', 111), ('Arad', 118)],
-    'Lugoj': [('Mehadia', 70), ('Timisoara', 111)],
-    'Mehadia': [('Drobeta', 75), ('Lugoj', 70)],
-    'Drobeta': [('Craiova', 120), ('Mehadia', 75)],
-    'Craiova': [('Pitesti', 138), ('Drobeta', 120), ('Rimnicu Vilcea', 146)],
-    'Rimnicu Vilcea': [('Pitesti', 97), ('Sibiu', 80), ('Craiova', 146)],
-    'Fagaras': [('Bucharest', 211), ('Sibiu', 99)],
-    'Pitesti': [('Bucharest', 101), ('Rimnicu Vilcea', 97), ('Craiova', 138)],
-    'Bucharest': [('Fagaras', 211), ('Pitesti', 101), ('Giurgiu', 90)],
-    'Giurgiu': [('Bucharest', 90)],
-}
+# Code:
 
-# Heuristic: Straight-line distances to Bucharest
-heuristics = {
-    'Arad': 366,
-    'Zerind': 374,
-    'Oradea': 380,
-    'Sibiu': 253,
-    'Timisoara': 329,
-    'Lugoj': 244,
-    'Mehadia': 241,
-    'Drobeta': 242,
-    'Craiova': 160,
-    'Rimnicu Vilcea': 193,
-    'Fagaras': 176,
-    'Pitesti': 100,
-    'Bucharest': 0,
-    'Giurgiu': 77,
-}
-
-def greedy_best_first_search(start, goal):
-    # Priority queue with heuristic as priority
-    priority_queue = []
-    heapq.heappush(priority_queue, (heuristics[start], start))
+def minimax(node, depth, maximizingPlayer):
+    if depth == 0 or len(node[1]) == 0:
+        return node[0]
+    if maximizingPlayer:
+        maxEva = float('-inf')
+        for child in node[1]:
+            eva = minimax(child, depth - 1, False)
+            maxEva = max(maxEva, eva)   
+        return maxEva
+    else:
+        minEva = float('inf')
+        for child in node[1]:
+            eva = minimax(child, depth - 1, True)
+            minEva = min(minEva, eva)
+        return minEva
     
-    visited = set()
-    
-    while priority_queue:
-        # Get the node with the lowest heuristic value
-        _, current_node = heapq.heappop(priority_queue)
-        
-        print(f"Visiting: {current_node}")
-        
-        if current_node == goal:
-            print("Goal reached!")
-            return
-        
-        visited.add(current_node)
-        
-        # Explore neighbors
-        for neighbor, _ in romania_map[current_node]:
-            if neighbor not in visited:
-                heapq.heappush(priority_queue, (heuristics[neighbor], neighbor))
+tree = [3, [[5, [[9, [[8, [], []], [6, [], []]]], [6, [], []]], [2, [[3, [[1, [], []]], [7, [], []]]]]]]]
 
-# Start the search
-greedy_best_first_search('Arad', 'Bucharest')
+print(minimax(tree, 3, True)) # 6
 
 #task 2:
-# Implement A* search in python
+# Implement alpha beta pruning in python. .(pseudocode is given in
+# chapter slides as well as in this manual below)
 
-import heapq
+# Code:
 
-# Define the Romania map graph with distances between cities
-romania_map = {
-    'Arad': [('Zerind', 75), ('Sibiu', 140), ('Timisoara', 118)],
-    'Zerind': [('Oradea', 71), ('Arad', 75)],
-    'Oradea': [('Sibiu', 151), ('Zerind', 71)],
-    'Sibiu': [('Fagaras', 99), ('Rimnicu Vilcea', 80), ('Arad', 140), ('Oradea', 151)],
-    'Timisoara': [('Lugoj', 111), ('Arad', 118)],
-    'Lugoj': [('Mehadia', 70), ('Timisoara', 111)],
-    'Mehadia': [('Drobeta', 75), ('Lugoj', 70)],
-    'Drobeta': [('Craiova', 120), ('Mehadia', 75)],
-    'Craiova': [('Pitesti', 138), ('Drobeta', 120), ('Rimnicu Vilcea', 146)],
-    'Rimnicu Vilcea': [('Pitesti', 97), ('Sibiu', 80), ('Craiova', 146)],
-    'Fagaras': [('Bucharest', 211), ('Sibiu', 99)],
-    'Pitesti': [('Bucharest', 101), ('Rimnicu Vilcea', 97), ('Craiova', 138)],
-    'Bucharest': [('Fagaras', 211), ('Pitesti', 101), ('Giurgiu', 90)],
-    'Giurgiu': [('Bucharest', 90)],
-}
 
-# Heuristic: Straight-line distances to Bucharest
-heuristics = {
-    'Arad': 366,
-    'Zerind': 374,
-    'Oradea': 380,
-    'Sibiu': 253,
-    'Timisoara': 329,
-    'Lugoj': 244,
-    'Mehadia': 241,
-    'Drobeta': 242,
-    'Craiova': 160,
-    'Rimnicu Vilcea': 193,
-    'Fagaras': 176,
-    'Pitesti': 100,
-    'Bucharest': 0,
-    'Giurgiu': 77,
-}
+def minimax(node, depth, isMaximizingPlayer, alpha, beta):
+    if depth == 0 or len(node[1]) == 0:
+        return node[0]
+    if isMaximizingPlayer:
+        bestVal = float("-inf")
+        for child in node[1]:
+            value = minimax(child, depth - 1, False, alpha, beta)
+            bestVal = max(bestVal, value)
+            alpha = max(alpha, bestVal)
+            if beta <= alpha:
+                break
+        return bestVal
+    else:
+        bestVal = float("inf")
+        for child in node[1]:
+            value = minimax(child, depth - 1, True, alpha, beta)
+            bestVal = min(bestVal, value)
+            beta = min(beta, bestVal)
+            if beta <= alpha:
+                break
+        return bestVal
 
-def a_star_search(start, goal):
-    # Priority queue with cost + heuristic as priority
-    priority_queue = []
-    heapq.heappush(priority_queue, (0 + heuristics[start], 0, start, []))
-    
-    visited = set()
-    
-    while priority_queue:
-        # Get the node with the lowest (cost + heuristic) value
-        _, cost, current_node, path = heapq.heappop(priority_queue)
-        
-        # Add the current node to the path
-        path = path + [current_node]
-        
-        print(f"Visiting: {current_node}")
-        
-        if current_node == goal:
-            print("Goal reached!")
-            print(f"Path: {path}")
-            print(f"Total Cost: {cost}")
-            return
-        
-        visited.add(current_node)
-        
-        # Explore neighbors
-        for neighbor, step_cost in romania_map[current_node]:
-            if neighbor not in visited:
-                total_cost = cost + step_cost
-                heapq.heappush(priority_queue, (total_cost + heuristics[neighbor], total_cost, neighbor, path))
 
-# Start the search
-a_star_search('Arad', 'Bucharest')
-
-#task 3:
-# Implement the 8 puzzle problem using a* search in python
-
-import heapq
-
-# Helper function to find the position of the empty space (0) in the puzzle
-def find_zero_position(state):
-    for i, row in enumerate(state):
-        if 0 in row:
-            return i, row.index(0)
-
-# Heuristic function: Number of misplaced tiles
-def misplaced_tiles(state, goal):
-    return sum(1 for i in range(3) for j in range(3) if state[i][j] != 0 and state[i][j] != goal[i][j])
-
-# Generate the neighbors of the current state
-def generate_neighbors(state):
-    neighbors = []
-    x, y = find_zero_position(state)
-    directions = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-    
-    for dx, dy in directions:
-        if 0 <= dx < 3 and 0 <= dy < 3:
-            # Copy the current state
-            new_state = [row[:] for row in state]
-            # Swap the empty space with the neighboring tile
-            new_state[x][y], new_state[dx][dy] = new_state[dx][dy], new_state[x][y]
-            neighbors.append(new_state)
-    
-    return neighbors
-
-# A* Search function
-def a_star_search(start, goal):
-    priority_queue = []
-    heapq.heappush(priority_queue, (misplaced_tiles(start, goal), 0, start, []))
-    
-    visited = set()
-    
-    while priority_queue:
-        _, cost, current_state, path = heapq.heappop(priority_queue)
-        
-        # Add the current state to the path
-        path = path + [current_state]
-        
-        if current_state == goal:
-            print("Goal reached!")
-            print("Path:")
-            for step in path:
-                for row in step:
-                    print(row)
-                print()
-            print(f"Total Moves: {cost}")
-            return
-        
-        # Serialize state to make it hashable for the visited set
-        state_tuple = tuple(tuple(row) for row in current_state)
-        if state_tuple in visited:
-            continue
-        
-        visited.add(state_tuple)
-        
-        # Explore neighbors
-        for neighbor in generate_neighbors(current_state):
-            if tuple(tuple(row) for row in neighbor) not in visited:
-                total_cost = cost + 1
-                heapq.heappush(priority_queue, (total_cost + misplaced_tiles(neighbor, goal), total_cost, neighbor, path))
-
-# Initial state (can be customized)
-start_state = [
-    [1, 2, 3],
-    [4, 0, 5],
-    [7, 8, 6]
+tree = [
+    3,
+    [
+        [
+            5,
+            [[9, [[8, [], []], [6, [], []]]], [6, [], []]],
+            [2, [[3, [[1, [], []]], [7, [], []]]]],
+        ]
+    ],
 ]
 
-# Goal state
-goal_state = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 0]
-]
-
-# Start the search
-a_star_search(start_state, goal_state)
+print(minimax(tree, 3, True, float("-inf"), float("inf")))  # 5
